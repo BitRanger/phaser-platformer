@@ -1,0 +1,7 @@
+body,
+canvas {
+  display: block;
+  margin: auto;
+  background: #16191b;
+  max-width: 100%;
+}
