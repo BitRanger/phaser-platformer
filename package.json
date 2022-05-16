@@ -9,5 +9,9 @@
   },
   "devDependencies": {
     "vite": "^2.9.9"
+  },
+  "dependencies": {
+    "browser-sync": "^2.27.9",
+    "phaser": "^3.55.2"
   }
 }

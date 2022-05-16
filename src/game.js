@@ -3,7 +3,7 @@ var config = {
 	width: 800,
 	height: 400,
 	fps: {
-		target: 144,
+		target: 60,
 		forceSetTimeOut: true,
 	},
 	transparent: true,
@@ -20,7 +20,6 @@ var config = {
 		update: update,
 	},
 };
-
 var player,
 	coins,
 	platforms,
@@ -30,11 +29,10 @@ var player,
 	acceleration = 750,
 	jumpVelocity = -300,
 	jumptimer = 0;
-var maxX;
 
 var game = new Phaser.Game(config);
 
-function preload() {
+/*function preload() {
 	this.load.setBaseURL("https://digitherium.com/codepen/phaserplatformer/");
 	this.load.image("ground", "platform.jpg");
 	this.load.image("coin", "coin.jpg");
@@ -62,7 +60,6 @@ function create() {
 
 	//Set gravity
 	player.body.setGravityY(300);
-	maxX = player.body.y;
 
 	cursors = this.input.keyboard.createCursorKeys();
 
@@ -138,7 +135,7 @@ function update() {
 	} else {
 		jumptimer = 0;
 	}
-}
+}*/
 
 function collectCoin(player, coin) {
 	coin.disableBody(true, true);
