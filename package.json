@@ -12,6 +12,10 @@
     "vite": "^2.9.9"
   },
   "dependencies": {
+<<<<<<< HEAD
     "browser-sync": "^2.27.9"
+=======
+    "phaser": "^3.55.2"
+>>>>>>> origin/main
   }
 }
