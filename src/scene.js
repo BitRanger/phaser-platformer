@@ -1,56 +1,59 @@
-import Phaser from "phaser";
-var player,
+// import Phaser from "phaser";
+let player,
 	coins,
+	floor,
 	platforms,
 	cursors,
 	score = 0,
-	scoreText,
-	acceleration = 750,
-	jumpVelocity = -300,
-	jumptimer = 0;
+	hud,
+	scoreText, 
+	acceleration = 350,
+	jumpVelocity = -250,
+	jumptimer = 0,
+	emitter;
 
 export default class gameScene extends Phaser.Scene {
 	constructor() {
 		super("gameScene");
+		this.spacePressed = false;
 	}
 	preload() {
-		this.load.setBaseURL(
-			"https://digitherium.com/codepen/phaserplatformer/"
-		);
-		this.load.image("ground", "platform.jpg");
-		this.load.image("coin", "coin.jpg");
-		this.load.image("hero", "hero.jpg");
-		this.load.image("logo", "digitherium-logo.jpg");
+        this.load.image("coin", "/assets/images/coin.png");
+		this.load.image("ground-1", "/assets/images/ground-1.png");
+		this.load.image("ground-2", "/assets/images/ground-2.png");
+		this.load.image("hero", "/assets/images/hero.jpg");
 	}
 
 	create() {
-		platforms = this.physics.add.staticGroup();
+		/*  map  */
+		this.physics.world.setBounds(0, 50, 1630, 500);
+		//platforms
+		floor = this.physics.add.staticGroup({
+			key: "ground-1",
+			repeat: 50,
+			setXY: {
+				x: 0,
+				y: 400,
+				stepX: 32,
+			}, 
+		});
 
-		platforms.create(400, 400, "ground").setScale(2).refreshBody();
-		platforms.create(50, 240, "ground");
-		platforms.create(750, 140, "ground");
+		floor.create(200,200, "ground-1");
+        
+		
+        platforms = this.physics.add.staticGroup({
+			key: "ground-2",
+			repeat: 50,
+			setXY: {
+				x: 0,
+				y: 430,
+				stepX: 32,
+			}, 
+		});
+	
 
-		player = this.physics.add.sprite(100, 350, "hero");
-
-		player.setCollideWorldBounds(true);
-
-		//Set bounce to 0, so our hero just lands directly
-		player.setBounce(0);
-
-		//Set top speeds
-		player.body.maxVelocity.x = 200;
-		player.body.maxVelocity.y = 500;
-
-		//Set gravity
-		player.body.setGravityY(300);
-
-		this.physics.world.setBounds(0, 0, 1630, 400);
-
-        this.cameras.main.setBounds(0, 0, 1630, 400);
-		this.cameras.main.startFollow(player, true, 0.05, 0, -200, 120);
-
-		cursors = this.input.keyboard.createCursorKeys();
-
+		
+		//coins
 		coins = this.physics.add.group({
 			key: "coin",
 			repeat: 11,
@@ -65,67 +68,94 @@ export default class gameScene extends Phaser.Scene {
 			child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
 		});
 
-		scoreText = this.add.text(16, 16, "score: 0", {
+
+		//player
+		player = this.physics.add.sprite(100, 350, "hero");
+		player.setCollideWorldBounds(true);
+		player.setBounce(0);
+		player.body.maxVelocity.x = 200;
+		player.body.maxVelocity.y = 500;
+		player.body.setGravityY(300);
+		
+		//camera boundaries / following player
+    	this.cameras.main.setBounds(0, 30, 1630, 450);
+		this.cameras.main.startFollow(player, true, 0.05, 0, -200, 100);
+		
+		//input
+		cursors = this.input.keyboard.createCursorKeys();
+		this.input.keyboard.on("keydown-SPACE", () => this.spacePressed = true);		
+		//collisions
+		this.physics.add.collider(player, floor);
+		this.physics.add.collider(coins, floor);
+		this.physics.add.overlap(player, coins, this.collectCoin, null, this);
+
+		//hud
+		scoreText = this.add.text(16, 50, "score: 0", {
 			fontSize: "24px",
 			fill: "#fff",
 		});
-
-		this.physics.add.collider(player, platforms);
-		this.physics.add.collider(coins, platforms);
-		this.physics.add.overlap(player, coins, this.collectCoin, null, this);
+		scoreText.setScrollFactor(0);
+		var particles = this.add.particles("coin");
+		emitter = particles.createEmitter();
+		emitter.setPosition(player.x, player.y);
+		emitter.setSpeed(150);
+		emitter.setBlendMode(Phaser.BlendModes.ADD);
+		emitter.pause();
 	}
 
 	update() {
-		var standing = player.body.blocked.down || player.body.touching.down;
-		//if left key is down then move left
+		//check for grounded
+		let standing = player.body.blocked.down || player.body.touching.down;
+
+		//left input
 		if (cursors.left.isDown) {
-			//if hero is on ground then use full acceleration
 			if (standing) {
-				player.setAccelerationX(-acceleration);
+				player.setVelocityX(-acceleration);
 			}
-			//if hero is in the air then accelerate slower
 			else {
-				player.setAccelerationX(-acceleration / 3);
+				player.setVelocityX(-acceleration / 1.25);
 			}
 		}
-		//same deal but for right arrow
+		//right input
 		else if (cursors.right.isDown) {
 			if (standing) {
-				player.setAccelerationX(acceleration);
+				player.setVelocityX(acceleration);
 			} else {
-				player.setAccelerationX(acceleration / 3);
-			}
-		}
-		//if neither left or right arrow is down then...
-		else {
-			//if hero is close to having no velocity either left or right then set velocity to 0. This stops jerky back and forth as the hero comes to a halt. i.e. as we slow hero down, below a certain point we just stop them moving altogether as it looks smoother
-			if (
-				Math.abs(player.body.velocity.x) < 10 &&
-				Math.abs(player.body.velocity.x) > -10
-			) {
-				player.setVelocityX(0);
-				player.setAccelerationX(0);
-			}
-			//if our hero isn't moving left or right then slow them down
-			else {
-				//this velocity.x check just works out whether we are setting a positive (going right) or negative (going left) number
-				player.setAccelerationX(
-					((player.body.velocity.x > 0 ? -1 : 1) * acceleration) / 2
-				);
+				player.setVelocityX(acceleration / 1.25);
 			}
 		}
 
-		//If player is touching floor and up key is pressed then jump
+		//no left-right input
+		else {
+			player.setVelocityX(0);
+		}
+        
+		//jumping
 		if (cursors.up.isDown) {
 			if (standing && jumptimer == 0) {
 				jumptimer = 1;
 				player.setVelocityY(jumpVelocity);
 			} else if (jumptimer > 0 && jumptimer < 31) {
 				jumptimer++;
-				player.setVelocityY(jumpVelocity - jumptimer * 2);
+				player.setVelocityY(jumpVelocity - jumptimer * 0.5);
 			}
 		} else {
 			jumptimer = 0;
+		}
+        
+		//Game  Over 
+        if (player.y >= 500) {
+    	    this.scene.start("endScreen", {score})
+        }
+		emitter.setPosition(player.x, player.y);
+		if(this.spacePressed == true){
+			if(emitter.active){
+				emitter.pause();
+			}
+			else{
+				emitter.resume();
+			}
+			this.spacePressed = false;
 		}
 	}
 
