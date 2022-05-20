@@ -8,9 +8,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "phaser": "^3.55.2",
     "vite": "^2.9.9"
-  },
-  "dependencies": {
-    "phaser": "^3.55.2"
   }
 }

@@ -1,4 +1,3 @@
-//import Phaser from "phaser"
 let text;
 export default class startScreen extends Phaser.Scene{
 	constructor(){
