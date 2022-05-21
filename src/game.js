@@ -8,15 +8,15 @@ var config = {
 	fps: {
 		target: 60,
 	},
-	transparent: true,
+	transparent: false,
 	physics: {
 		default: "arcade",
 		arcade: {
 			gravity: { y: 300 },
-			debug: true,
+			debug: false,
 		},
 	},
-	scene: [startScreen, gameScene, endScreen],
+	scene: [endScreen],
 };
 
 var game = new Phaser.Game(config);
