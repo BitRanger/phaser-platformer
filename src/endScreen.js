@@ -52,6 +52,7 @@ export default class endScreen extends Phaser.Scene {
 
 	update() {
 		if (this.spacePressed === true) {
+			this.spacePressed = false;
 			this.scene.start("gameScene");
 		}
 	}
