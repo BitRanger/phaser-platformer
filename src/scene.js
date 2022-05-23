@@ -1,13 +1,12 @@
 let player,
 	enemy,
-	coins,
 	cursors,
 	standing,
 	tiles,
 	score = 0,
 	scoreText,
 	lives = 2,
-    maxLives = 3,
+	maxLives = 3,
 	maxScore = 0,
 	livesText,
 	acceleration = 350,
@@ -19,16 +18,27 @@ export default class gameScene extends Phaser.Scene {
 		super("gameScene");
 	}
 
+	init(data) {
+		console.log(data);
+		if (data == {}) {
+			data = 1
+		} else {
+			this.level = 2;
+			console.log(this.level)
+		}
+	}
+
 	preload() {
-        this.load.audio("killEnemy", "assets/sounds/GameOver.wav");
-        this.load.audio("pickupCoin", "assets/sounds/pickupCoin.wav");
+		this.load.audio("killEnemy", "assets/sounds/GameOver.wav");
+		this.load.audio("pickupCoin", "assets/sounds/pickupCoin.wav");
 		this.load.audio("jump", "assets/sounds/jump.wav");
 		this.load.image("coin", "assets/images/coin.png");
 		this.load.image("hero", "assets/images/hero.jpg");
 		this.load.image("lava", "assets/images/lava.png");
 		this.load.image("tiles", "assets/images/tilesheet.png");
 		this.load.image("hearts", "assets/images/heart.png");
-		this.load.tilemapTiledJSON("map", "assets/maps/lvl2.json");
+		this.load.tilemapTiledJSON("map1", "assets/maps/lvl1.json");
+		this.load.tilemapTiledJSON("map2", "assets/maps/lvl2.json");
 	}
 	create() {
 		this.createMap();
@@ -39,10 +49,6 @@ export default class gameScene extends Phaser.Scene {
 		this.addInput();
 		this.addHud();
 		this.createLights();
-		this.physics.add.collider(player, enemy, this.playerEnemyCollide, null, this);
-		this.heart = this.physics.add.sprite(100, 100, "hearts");
-		this.physics.add.overlap(player, this.heart, this.collectHeart, null, this)
-		this.physics.add.collider(this.heart, this.ground);
 	}
 
 	update() {
@@ -50,18 +56,19 @@ export default class gameScene extends Phaser.Scene {
 		this.deathCheck();
 	}
 
-	collectHeart(player, heart){
+	collectHeart(player, heart) {
 		heart.disableBody(true, true);
+		this.lights.removeLight(heart.light);
 		lives++;
 		livesText.setText("lives: " + lives);
 	}
-	
+
 	playerEnemyCollide() {
 		if (player.body.touching.down && enemy.body.touching.up) {
-			enemy.disableBody(true, true)
-            this.sound.play("killEnemy");
+			enemy.disableBody(true, true);
+			this.sound.play("killEnemy");
 		} else {
-			if (lives > 0 ){
+			if (lives > 0) {
 				player.x = 200;
 				player.y = 200;
 				lives--;
@@ -71,13 +78,18 @@ export default class gameScene extends Phaser.Scene {
 			}
 		}
 	}
-	
+
 	createMap() {
+		console.log(this.level)
+		this.mapKey = "map" + this.level;
+		console.log(this.mapKey);
+
 		this.map = this.make.tilemap({
-			key: "map"
+			key: this.mapKey,
 		});
+
 		tiles = this.map.addTilesetImage("tilesheet", "tiles");
-		this.map.setCollisionBetween(0, 5);
+		this.map.setCollisionBetween(0, 7);
 		this.physics.world.setBounds(
 			0,
 			0,
@@ -89,6 +101,7 @@ export default class gameScene extends Phaser.Scene {
 		this.coinsLayer = this.map.getObjectLayer("coins");
 		this.coinsLayer.objects.forEach((element) => {
 			maxScore += 10;
+			console.log("e");
 			let coin = this.coins.create(
 				element.x + element.width / 2,
 				element.y - element.height / 2,
@@ -96,21 +109,25 @@ export default class gameScene extends Phaser.Scene {
 			);
 			coin.setOrigin(0.5, 0.5);
 			coin.setPipeline("Light2D");
-			coin.light = this.lights.addLight(coin.x, coin.y, 75).setColor(0xffffff).setIntensity(2);
-            
+			coin.light = this.lights
+				.addLight(coin.x, coin.y, 75)
+				.setColor(0xffffff)
+				.setIntensity(2);
 		});
-        this.hearts = this.physics.add.staticGroup();
+		this.hearts = this.physics.add.staticGroup();
 		this.heartsLayer = this.map.getObjectLayer("hearts");
 		this.heartsLayer.objects.forEach((element) => {
-			maxLives += 1;
-			let hearts = this.hearts.create(
+			let heart = this.hearts.create(
 				element.x + element.width / 2,
 				element.y - element.height / 2,
 				"hearts"
 			);
-			hearts.setOrigin(0.5, 0.5);
-			hearts.setPipeline("Light2D");
-			hearts.light = this.lights.addLight(hearts.x, hearts.y, 75).setColor(0xffffff).setIntensity(2);
+			heart.setOrigin(0.5, 0.5);
+			heart.setPipeline("Light2D");
+			heart.light = this.lights
+				.addLight(heart.x, heart.y, 75)
+				.setColor(0xff0000)
+				.setIntensity(2);
 		});
 	}
 
@@ -135,10 +152,31 @@ export default class gameScene extends Phaser.Scene {
 
 	addCollisions() {
 		this.physics.add.collider(player, this.ground);
-		this.physics.add.overlap(player, this.coins, this.collectCoin, null, this);
+		this.physics.add.overlap(
+			player,
+			this.coins,
+			this.collectCoin,
+			null,
+			this
+		);
 		this.physics.add.collider(enemy, this.ground);
+		this.physics.add.collider(
+			player,
+			enemy,
+			this.playerEnemyCollide,
+			null,
+			this
+		);
+		this.physics.add.overlap(
+			player,
+			this.hearts,
+			this.collectHeart,
+			null,
+			this
+		);
+		this.physics.add.collider(this.hearts, this.ground);
 	}
-	
+
 	addInput() {
 		cursors = this.input.keyboard.createCursorKeys();
 	}
@@ -200,10 +238,9 @@ export default class gameScene extends Phaser.Scene {
 
 	endGame(thing) {
 		if (thing === true) {
-			this.scene.start("endScreen", { score, win: true});
-
+			this.scene.start("endScreen", { score, win: true });
 		} else if (thing === false) {
-			this.scene.start("endScreen", { score, win: false});
+			this.scene.start("endScreen", { score, win: false });
 		}
 	}
 
@@ -212,13 +249,13 @@ export default class gameScene extends Phaser.Scene {
 		this.lights.removeLight(coin.light);
 		score += 10;
 		scoreText.setText("Score: " + score);
-        this.sound.play("pickupCoin"); 
+		this.sound.play("pickupCoin");
 	}
-	
+
 	createLights() {
 		this.ground.setPipeline("Light2D");
 		player.setPipeline("Light2D");
-		enemy.setPipeline("Light2D")
+		enemy.setPipeline("Light2D");
 		this.lights.enable().setAmbientColor(0x333333);
 		this.thing = this.lights
 			.addLight(player.x, player.y, 100000)
