@@ -1,13 +1,15 @@
 {
-  "name": "phaser-platformer",
-  "private": true,
-  "version": "0.0.0",
+  "name": "phaser-platformer-ts",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "npx vite",
+    "build": "npx vite build"
   },
-  "devDependencies": {
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
     "phaser": "^3.55.2",
     "vite": "^2.9.9"
   }
