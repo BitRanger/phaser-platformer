@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+// import Phaser from "phaser";
 
 export default class endScreen extends Phaser.Scene {
 	text2: Phaser.GameObjects.Text;
@@ -41,7 +41,7 @@ export default class endScreen extends Phaser.Scene {
 			fill: "#fff",
 		});
 		this.input.keyboard.on("keydown-SPACE", () => {
-			this.scene.start("gameScene", { score: 0, lives: 3 });
+			this.scene.start("gameScene", { score: 0, lives: 3, first_load: true, coinsArray: [], heartsArray: [] });
 		});
 	}
 

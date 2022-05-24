@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+// import Phaser from "phaser";
 
 interface Player extends Phaser.Types.Physics.Arcade.SpriteWithDynamicBody {
 	speed?: number;
@@ -17,7 +17,7 @@ export default class gameScene extends Phaser.Scene {
 	map: Phaser.Tilemaps.Tilemap;
 	ground: Phaser.Tilemaps.TilemapLayer;
 	coins: Phaser.Physics.Arcade.StaticGroup;
-	coinsLayer: Phaser.Tilemaps.ObjectLayer;
+	coinsLayer: Phaser.Tilemaps.ObjectLayer; //bruh can u see the repl it says its not waking up 4 me
 	hearts: Phaser.Physics.Arcade.StaticGroup;
 	heartsLayer: Phaser.Tilemaps.ObjectLayer;
 	backgroundLight: Phaser.GameObjects.Light;
@@ -35,6 +35,8 @@ export default class gameScene extends Phaser.Scene {
 	heartsArray: any;
 	maxScore: number;
 	jumpTimer: number;
+	first_load: boolean;
+    level: number;
 
 	constructor() {
 		super("gameScene");
@@ -45,13 +47,20 @@ export default class gameScene extends Phaser.Scene {
 	init(data) {
 		if (Object.keys(data).length === 0) {
 			this.score = 0;
-			console.warn(this.score);
 			this.lives = 3;
-			console.warn(this.lives);
+            this.level = 1;
+			this.first_load = true;
+			this.coinsArray = [];
+			this.heartsArray = [];
 		} else {
 			this.score = data.score;
 			this.lives = data.lives;
+			this.first_load = data.first_load;
+			this.heartsArray = data.heartsArray;
+			this.coinsArray = data.coinsArray;
+            this.level = data.level;
 		}
+		this.maxScore = 0;
 		data = undefined;
 	}
 
@@ -65,8 +74,10 @@ export default class gameScene extends Phaser.Scene {
 		this.load.image("hero", "assets/images/hero.jpg");
 		this.load.image("tiles", "assets/images/tilesheet.png");
 		this.load.image("hearts", "assets/images/heart.png");
-		this.load.tilemapTiledJSON("map", "assets/maps/lvl1.json");
+        this.load.tilemapTiledJSON("map1", "assets/maps/lvl1.json")
+		this.load.tilemapTiledJSON("map3", "assets/maps/lvl3.json");
 	}
+    
 	create() {
 		this.createMap();
 		this.createPlayer();
@@ -83,11 +94,12 @@ export default class gameScene extends Phaser.Scene {
 	}
 
 	createMap() {
+        
 		this.map = this.make.tilemap({
-			key: "map",
+			key: "map3",
 		});
 		this.tiles = this.map.addTilesetImage("tilesheet", "tiles");
-		this.map.setCollisionBetween(0, 5);
+		this.map.setCollisionBetween(0, 100);
 		this.physics.world.setBounds(
 			0,
 			0,
@@ -99,7 +111,7 @@ export default class gameScene extends Phaser.Scene {
 		this.coinsLayer = this.map.getObjectLayer("coins");
 		this.coinsLayer.objects.forEach((element) => {
 			this.maxScore += 10;
-			if (this.coinsArray.indexOf(element.id) !== -1) {
+			if (this.coinsArray.indexOf(element.id) !== -1 || this.first_load === true) {
 				let coin = this.coins.create(
 					element.x + element.width / 2,
 					element.y - element.height / 2,
@@ -111,14 +123,16 @@ export default class gameScene extends Phaser.Scene {
 					.addLight(coin.x, coin.y, 75)
 					.setColor(0xffffff)
 					.setIntensity(2);
-				this.coinsArray.push(element.id);
+				if(this.first_load){
+					this.coinsArray.push(element.id);
+				}
 				coin.id = element.id;
 			}
 		});
 		this.hearts = this.physics.add.staticGroup();
 		this.heartsLayer = this.map.getObjectLayer("hearts");
 		this.heartsLayer.objects.forEach((element) => {
-			if (this.heartsArray.indexOf(element.id) !== -1) {
+			if (this.heartsArray.indexOf(element.id) !== -1 || this.first_load === true) {
 				let heart = this.hearts.create(
 					element.x + element.width / 2,
 					element.y - element.height / 2,
@@ -143,11 +157,6 @@ export default class gameScene extends Phaser.Scene {
 				"lava"
 			);
 			lavaElement.setOrigin(0.5, 0.5);
-			lavaElement.setPipeline("Light2D");
-			lavaElement.light = this.lights
-				.addLight(lavaElement.x, lavaElement.y, 75)
-				.setColor(0xaaffff)
-				.setIntensity(2);
 		});
 	}
 
@@ -169,10 +178,9 @@ export default class gameScene extends Phaser.Scene {
 			0,
 			-100,
 			this.map.widthInPixels,
-			this.map.heightInPixels
+			this.map.heightInPixels + 100
 		);
-		this.cameras.main.startFollow(this.player, true, 0.05, 0, -200, 100);
-	}
+		this.cameras.main.startFollow(this.player, true, 0.05, 0.05, -200, 100);	}
 
 	addCollisions() {
 		this.physics.add.collider(this.player, this.ground);
@@ -205,6 +213,10 @@ export default class gameScene extends Phaser.Scene {
 			this.scene.start("gameScene", {
 				lives: player.lives,
 				score: player.score,
+				coinsArray: this.coinsArray,
+				heartsArray: this.heartsArray,
+				first_load: false,
+                level: this.level
 			});
 		} else {
 			this.endGame(false);
@@ -274,9 +286,14 @@ export default class gameScene extends Phaser.Scene {
 
 	deathCheck() {
 		if (this.player.score == this.maxScore) {
-			this.endGame(true);
+            if(this.level === 3){
+                this.endGame();
+            }
+            else{
+                 this.sc   
+            }
 		}
-		if (this.player.y >= 500) {
+		if (this.player.y >= 600) {
 			this.endGame(false);
 			this.lives += -1;
 		}
@@ -299,26 +316,29 @@ export default class gameScene extends Phaser.Scene {
 	collectCoin(player, coin) {
 		coin.disableBody(true, true);
 		this.lights.removeLight(coin.light);
+		coin.light = undefined;
 		this.player.score += 10;
 		this.scoreText.setText("Score: " + this.player.score);
 		this.sound.play("pickupCoin");
-		this.coinsArray.pop(this.coinsArray.indexOf(coin.id));
+		this.coinsArray.splice(this.coinsArray.indexOf(coin.id), 1);
 	}
 
 	collectHeart(player, heart) {
 		heart.disableBody(true, true);
 		this.player.lives++;
 		this.livesText.setText("lives: " + this.player.lives);
-		this.heartsArray.pop(this.heartsArray.indexOf(heart.id));
+		this.heartsArray.splice(this.heartsArray.indexOf(heart.id), 1);
 	}
 
 	createLights() {
 		this.ground.setPipeline("Light2D");
 		this.player.setPipeline("Light2D");
 		this.lights.enable().setAmbientColor(0x777777);
+		this.lights.max
 		this.backgroundLight = this.lights
 			.addLight(this.player.x, this.player.y, 100000)
 			.setColor(0xffffff)
 			.setIntensity(0.0008);
+	
 	}
 }

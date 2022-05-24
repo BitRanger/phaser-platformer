@@ -166,7 +166,7 @@
         {
          "columns":20,
          "firstgid":1,
-         "image":"Downloads\/tilesheet.png",
+         "image":"..\/images\/tilesheet.png",
          "imageheight":640,
          "imagewidth":640,
          "margin":0,
@@ -179,7 +179,7 @@
         {
          "columns":20,
          "firstgid":401,
-         "image":"Downloads\/newtilesheet.png",
+         "image":"..\/images\/tilesheet.png",
          "imageheight":640,
          "imagewidth":640,
          "margin":0,
@@ -193,4 +193,4 @@
  "type":"map",
  "version":"1.8",
  "width":200
-}
+} 
