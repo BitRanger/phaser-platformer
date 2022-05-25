@@ -8,8 +8,8 @@ var config = {
 	maxLights: 50,
 	height: 640,
 	fps: {
-        target: 20,
-		setTimeout: true
+		target: 20,
+		setTimeout: true,
 	},
 	transparent: false,
 	physics: {

@@ -17,7 +17,7 @@ export default class gameScene extends Phaser.Scene {
 	map: Phaser.Tilemaps.Tilemap;
 	ground: Phaser.Tilemaps.TilemapLayer;
 	coins: Phaser.Physics.Arcade.StaticGroup;
-	coinsLayer: Phaser.Tilemaps.ObjectLayer; //bruh can u see the repl it says its not waking up 4 me
+	coinsLayer: Phaser.Tilemaps.ObjectLayer;
 	hearts: Phaser.Physics.Arcade.StaticGroup;
 	heartsLayer: Phaser.Tilemaps.ObjectLayer;
 	backgroundLight: Phaser.GameObjects.Light;
@@ -36,7 +36,7 @@ export default class gameScene extends Phaser.Scene {
 	maxScore: number;
 	jumpTimer: number;
 	first_load: boolean;
-    level: number;
+	level: number;
 
 	constructor() {
 		super("gameScene");
@@ -48,7 +48,7 @@ export default class gameScene extends Phaser.Scene {
 		if (Object.keys(data).length === 0) {
 			this.score = 0;
 			this.lives = 3;
-            this.level = 1;
+			this.level = 5;
 			this.first_load = true;
 			this.coinsArray = [];
 			this.heartsArray = [];
@@ -58,7 +58,7 @@ export default class gameScene extends Phaser.Scene {
 			this.first_load = data.first_load;
 			this.heartsArray = data.heartsArray;
 			this.coinsArray = data.coinsArray;
-            this.level = data.level;
+			this.level = data.level;
 		}
 		this.maxScore = 0;
 		data = undefined;
@@ -74,10 +74,13 @@ export default class gameScene extends Phaser.Scene {
 		this.load.image("hero", "assets/images/hero.jpg");
 		this.load.image("tiles", "assets/images/tilesheet.png");
 		this.load.image("hearts", "assets/images/heart.png");
-        this.load.tilemapTiledJSON("map1", "assets/maps/lvl1.json")
+		this.load.tilemapTiledJSON("map1", "assets/maps/lvl1.json");
+		this.load.tilemapTiledJSON("map2", "assets/maps/lvl2.json");
 		this.load.tilemapTiledJSON("map3", "assets/maps/lvl3.json");
+		this.load.tilemapTiledJSON("map4", "assets/maps/lvl4.json");
+		this.load.tilemapTiledJSON("map5", "assets/maps/lvl5.json");
 	}
-    
+
 	create() {
 		this.createMap();
 		this.createPlayer();
@@ -94,9 +97,9 @@ export default class gameScene extends Phaser.Scene {
 	}
 
 	createMap() {
-        
+		let currentLevel = "map" + this.level;
 		this.map = this.make.tilemap({
-			key: "map3",
+			key: currentLevel,
 		});
 		this.tiles = this.map.addTilesetImage("tilesheet", "tiles");
 		this.map.setCollisionBetween(0, 100);
@@ -111,7 +114,10 @@ export default class gameScene extends Phaser.Scene {
 		this.coinsLayer = this.map.getObjectLayer("coins");
 		this.coinsLayer.objects.forEach((element) => {
 			this.maxScore += 10;
-			if (this.coinsArray.indexOf(element.id) !== -1 || this.first_load === true) {
+			if (
+				this.coinsArray.indexOf(element.id) !== -1 ||
+				this.first_load === true
+			) {
 				let coin = this.coins.create(
 					element.x + element.width / 2,
 					element.y - element.height / 2,
@@ -123,7 +129,7 @@ export default class gameScene extends Phaser.Scene {
 					.addLight(coin.x, coin.y, 75)
 					.setColor(0xffffff)
 					.setIntensity(2);
-				if(this.first_load){
+				if (this.first_load) {
 					this.coinsArray.push(element.id);
 				}
 				coin.id = element.id;
@@ -132,7 +138,10 @@ export default class gameScene extends Phaser.Scene {
 		this.hearts = this.physics.add.staticGroup();
 		this.heartsLayer = this.map.getObjectLayer("hearts");
 		this.heartsLayer.objects.forEach((element) => {
-			if (this.heartsArray.indexOf(element.id) !== -1 || this.first_load === true) {
+			if (
+				this.heartsArray.indexOf(element.id) !== -1 ||
+				this.first_load === true
+			) {
 				let heart = this.hearts.create(
 					element.x + element.width / 2,
 					element.y - element.height / 2,
@@ -164,11 +173,11 @@ export default class gameScene extends Phaser.Scene {
 		this.player = this.physics.add.sprite(100, 200, "hero");
 		this.player.score = this.score;
 		this.player.lives = this.lives;
-		this.player.speed = 350;
-		this.player.jumpVelocity = -300;
+		this.player.speed = 1500;
+		this.player.jumpVelocity = -400;
 		this.player.setCollideWorldBounds(true);
 		this.player.setBounce(0);
-		this.player.body.maxVelocity.x = 200;
+		this.player.body.maxVelocity.x = 400;
 		this.player.body.maxVelocity.y = 500;
 		this.player.body.setGravityY(500);
 	}
@@ -180,7 +189,8 @@ export default class gameScene extends Phaser.Scene {
 			this.map.widthInPixels,
 			this.map.heightInPixels + 100
 		);
-		this.cameras.main.startFollow(this.player, true, 0.05, 0.05, -200, 100);	}
+		this.cameras.main.startFollow(this.player, true, 0.05, 0.05, -200, 100);
+	}
 
 	addCollisions() {
 		this.physics.add.collider(this.player, this.ground);
@@ -216,7 +226,7 @@ export default class gameScene extends Phaser.Scene {
 				coinsArray: this.coinsArray,
 				heartsArray: this.heartsArray,
 				first_load: false,
-                level: this.level
+				level: this.level,
 			});
 		} else {
 			this.endGame(false);
@@ -231,7 +241,7 @@ export default class gameScene extends Phaser.Scene {
 		this.scoreText = this.add.text(
 			16,
 			50,
-			"score: " + this.score.toString(),
+			"score: " + this.player.score.toString(),
 			{
 				fontSize: "24px",
 			}
@@ -239,7 +249,7 @@ export default class gameScene extends Phaser.Scene {
 		this.livesText = this.add.text(
 			200,
 			50,
-			"lives: " + this.lives.toString(),
+			"lives: " + this.player.lives.toString(),
 			{
 				fontSize: "24px",
 			}
@@ -286,16 +296,21 @@ export default class gameScene extends Phaser.Scene {
 
 	deathCheck() {
 		if (this.player.score == this.maxScore) {
-            if(this.level === 3){
-                this.endGame();
-            }
-            else{
-                 this.sc   
-            }
+			if (this.level < 4) {
+				this.scene.start("gameScene", {
+                    score: this.player.score,
+                    lives: this.player.lives,
+					coinsArray: this.coinsArray,
+					heartsArray: this.heartsArray,
+					first_load: true,
+					level: this.level + 1,
+				});
+			} else {
+				this.endGame(true);
+			}
 		}
 		if (this.player.y >= 600) {
-			this.endGame(false);
-			this.lives += -1;
+			this.playerDeath(this.player);
 		}
 	}
 
@@ -334,11 +349,9 @@ export default class gameScene extends Phaser.Scene {
 		this.ground.setPipeline("Light2D");
 		this.player.setPipeline("Light2D");
 		this.lights.enable().setAmbientColor(0x777777);
-		this.lights.max
 		this.backgroundLight = this.lights
 			.addLight(this.player.x, this.player.y, 100000)
 			.setColor(0xffffff)
 			.setIntensity(0.0008);
-	
 	}
 }
