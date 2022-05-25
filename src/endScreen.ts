@@ -12,20 +12,18 @@ export default class endScreen extends Phaser.Scene {
 
 	init(data) {
 		this.score = data.score;
-		if (data.hasOwnProperty(this.win)) {
-			this.win = data.win;
-		} else {
-			this.win = false;
-		}
+		this.win = data.win;
 	}
 	preload() {}
 
 	create() {
+		console.log(this.win);
 		if (this.win) {
 			this.text2 = this.add.text(200, 150, "idk u won", {
 				fontSize: "50px",
 			});
-		} else {
+		}
+		else {
 			this.text2 = this.add.text(200, 150, "get destroyed noob L", {
 				fontSize: "50px",
 			});
@@ -43,6 +41,7 @@ export default class endScreen extends Phaser.Scene {
 				first_load: true,
 				coinsArray: [],
 				heartsArray: [],
+				level: 1,
 			});
 		});
 	}

@@ -47,7 +47,7 @@ export default class gameScene extends Phaser.Scene {
 	init(data) {
 		if (Object.keys(data).length === 0) {
 			this.score = 0;
-			this.lives = 3;
+			this.lives = 300;
 			this.level = 5;
 			this.first_load = true;
 			this.coinsArray = [];
@@ -173,11 +173,11 @@ export default class gameScene extends Phaser.Scene {
 		this.player = this.physics.add.sprite(100, 200, "hero");
 		this.player.score = this.score;
 		this.player.lives = this.lives;
-		this.player.speed = 1500;
+		this.player.speed = 350;
 		this.player.jumpVelocity = -400;
 		this.player.setCollideWorldBounds(true);
 		this.player.setBounce(0);
-		this.player.body.maxVelocity.x = 400;
+		this.player.body.maxVelocity.x = 350;
 		this.player.body.maxVelocity.y = 500;
 		this.player.body.setGravityY(500);
 	}
@@ -292,14 +292,17 @@ export default class gameScene extends Phaser.Scene {
 		} else {
 			this.jumpTimer = 0;
 		}
+		// if(this.cursors.down.isDown){
+		// 	this.endGame(true);
+		// }
 	}
 
 	deathCheck() {
 		if (this.player.score == this.maxScore) {
 			if (this.level < 5) {
 				this.scene.start("gameScene", {
-                    score: this.player.score,
-                    lives: this.player.lives,
+					score: this.player.score,
+					lives: this.player.lives,
 					coinsArray: this.coinsArray,
 					heartsArray: this.heartsArray,
 					first_load: true,
@@ -314,18 +317,12 @@ export default class gameScene extends Phaser.Scene {
 		}
 	}
 
-	endGame(win) {
-		if (win === true) {
-			this.scene.start("endScreen", {
-				score: this.player.score,
-				win: true,
-			});
-		} else if (win === false) {
-			this.scene.start("endScreen", {
-				score: this.player.score,
-				win: false,
-			});
-		}
+	endGame(wonGame) {
+		console.log(wonGame);
+		this.scene.start("endScreen", {
+			score: this.player.score,
+			win: wonGame,
+		});
 	}
 
 	collectCoin(player, coin) {
