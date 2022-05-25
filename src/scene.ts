@@ -296,7 +296,7 @@ export default class gameScene extends Phaser.Scene {
 
 	deathCheck() {
 		if (this.player.score == this.maxScore) {
-			if (this.level < 4) {
+			if (this.level < 5) {
 				this.scene.start("gameScene", {
                     score: this.player.score,
                     lives: this.player.lives,
