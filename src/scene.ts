@@ -10,7 +10,7 @@ interface Player extends Phaser.Types.Physics.Arcade.SpriteWithDynamicBody {
 
 interface MovingEnemey
 	extends Phaser.Types.Physics.Arcade.SpriteWithDynamicBody {
-	maxDistance?: number;
+	maxDistance?: number; 
 }
 
 export default class gameScene extends Phaser.Scene {
@@ -47,11 +47,12 @@ export default class gameScene extends Phaser.Scene {
 	init(data) {
 		if (Object.keys(data).length === 0) {
 			this.score = 0;
-			this.lives = 300;
-			this.level = 5;
+			this.lives = 1;
+			this.level = 1;
 			this.first_load = true;
 			this.coinsArray = [];
 			this.heartsArray = [];
+			this.levelScore = 0;
 		} else {
 			this.score = data.score;
 			this.lives = data.lives;
@@ -59,6 +60,7 @@ export default class gameScene extends Phaser.Scene {
 			this.heartsArray = data.heartsArray;
 			this.coinsArray = data.coinsArray;
 			this.level = data.level;
+			this.levelScore = data.levelScore;
 		}
 		this.maxScore = 0;
 		data = undefined;
@@ -97,6 +99,7 @@ export default class gameScene extends Phaser.Scene {
 	}
 
 	createMap() {
+		console.log(this.level)
 		let currentLevel = "map" + this.level;
 		this.map = this.make.tilemap({
 			key: currentLevel,
@@ -174,12 +177,12 @@ export default class gameScene extends Phaser.Scene {
 		this.player.score = this.score;
 		this.player.lives = this.lives;
 		this.player.speed = 350;
-		this.player.jumpVelocity = -400;
-		this.player.setCollideWorldBounds(true);
+		this.player.jumpVelocity = -300;
+		this.player.setCollideWorldBounds(false);
 		this.player.setBounce(0);
 		this.player.body.maxVelocity.x = 350;
-		this.player.body.maxVelocity.y = 500;
-		this.player.body.setGravityY(500);
+		this.player.body.maxVelocity.y = 400;
+		this.player.body.setGravityY(1000);
 	}
 
 	setCamera() {
@@ -227,6 +230,7 @@ export default class gameScene extends Phaser.Scene {
 				heartsArray: this.heartsArray,
 				first_load: false,
 				level: this.level,
+				levelScore: this.levelScore,
 			});
 		} else {
 			this.endGame(false);
@@ -283,7 +287,7 @@ export default class gameScene extends Phaser.Scene {
 				this.jumpTimer = 1;
 				this.player.setVelocityY(this.player.jumpVelocity);
 				this.sound.play("jump");
-			} else if (this.jumpTimer > 0 && this.jumpTimer < 31) {
+			} else if (this.jumpTimer > 0 && this.jumpTimer < 24) {
 				this.jumpTimer++;
 				this.player.setVelocityY(
 					this.player.jumpVelocity - this.jumpTimer * 0.5
@@ -292,14 +296,11 @@ export default class gameScene extends Phaser.Scene {
 		} else {
 			this.jumpTimer = 0;
 		}
-		// if(this.cursors.down.isDown){
-		// 	this.endGame(true);
-		// }
 	}
 
 	deathCheck() {
-		if (this.player.score == this.maxScore) {
-			if (this.level < 5) {
+		if (this.levelScore == this.maxScore) {
+			if (this.level < 4) {
 				this.scene.start("gameScene", {
 					score: this.player.score,
 					lives: this.player.lives,
@@ -307,6 +308,7 @@ export default class gameScene extends Phaser.Scene {
 					heartsArray: this.heartsArray,
 					first_load: true,
 					level: this.level + 1,
+					levelScore: 0,
 				});
 			} else {
 				this.endGame(true);
@@ -330,6 +332,7 @@ export default class gameScene extends Phaser.Scene {
 		this.lights.removeLight(coin.light);
 		coin.light = undefined;
 		this.player.score += 10;
+		this.levelScore += 10;
 		this.scoreText.setText("Score: " + this.player.score);
 		this.sound.play("pickupCoin");
 		this.coinsArray.splice(this.coinsArray.indexOf(coin.id), 1);

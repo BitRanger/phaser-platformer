@@ -42,6 +42,7 @@ export default class endScreen extends Phaser.Scene {
 				coinsArray: [],
 				heartsArray: [],
 				level: 1,
+				levelScore: 0
 			});
 		});
 	}
