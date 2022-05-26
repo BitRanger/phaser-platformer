@@ -9,7 +9,7 @@ var config = {
 	height: 640,
 	fps: {
 		target: 60,
-		forceSetTimeOut: true,
+		// forceSetTimeOut: true,
 	},
 	transparent: true,
 	physics: {
