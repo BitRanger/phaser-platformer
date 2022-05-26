@@ -11,15 +11,15 @@ var config = {
 		target: 60,
 		forceSetTimeOut: true,
 	},
-	transparent: false,
+	transparent: true,
 	physics: {
 		default: "arcade",
 		arcade: {
 			gravity: { y: 300 },
-			debug: true,
+			// debug: true,
 		},
 	},
-	scene: [startScreen, gameScene, endScreen],
+	scene: [startScreen, gameScene, endScreen], //startScreen, gameScene,
 };
 
 var game = new Phaser.Game(config);

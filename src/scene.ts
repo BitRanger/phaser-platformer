@@ -1,6 +1,7 @@
 // import Phaser from "phaser";
 
 interface Player extends Phaser.Types.Physics.Arcade.SpriteWithDynamicBody {
+	invincible?: boolean;
 	speed?: number;
 	jumpVelocity?: number;
 	score?: number;
@@ -10,7 +11,7 @@ interface Player extends Phaser.Types.Physics.Arcade.SpriteWithDynamicBody {
 
 interface MovingEnemey
 	extends Phaser.Types.Physics.Arcade.SpriteWithDynamicBody {
-	maxDistance?: number; 
+	maxDistance?: number;
 }
 
 export default class gameScene extends Phaser.Scene {
@@ -37,6 +38,7 @@ export default class gameScene extends Phaser.Scene {
 	jumpTimer: number;
 	first_load: boolean;
 	level: number;
+	levelScore: number;
 
 	constructor() {
 		super("gameScene");
@@ -48,7 +50,7 @@ export default class gameScene extends Phaser.Scene {
 		if (Object.keys(data).length === 0) {
 			this.score = 0;
 			this.lives = 1;
-			this.level = 1;
+			this.level = 3;
 			this.first_load = true;
 			this.coinsArray = [];
 			this.heartsArray = [];
@@ -96,10 +98,17 @@ export default class gameScene extends Phaser.Scene {
 	update() {
 		this.movement();
 		this.deathCheck();
+		// if (this.cursors.down.isDown) {
+		// 	this.player.invincible = !this.player.invincible;
+		// 	alert(
+		// 		"Invincibility has been toggled to " +
+		// 			this.player.invincible +
+		// 			"."
+		// 	);
+		// }
 	}
 
 	createMap() {
-		console.log(this.level)
 		let currentLevel = "map" + this.level;
 		this.map = this.make.tilemap({
 			key: currentLevel,
@@ -178,11 +187,12 @@ export default class gameScene extends Phaser.Scene {
 		this.player.lives = this.lives;
 		this.player.speed = 350;
 		this.player.jumpVelocity = -300;
-		this.player.setCollideWorldBounds(false);
+		this.player.setCollideWorldBounds(true);
 		this.player.setBounce(0);
 		this.player.body.maxVelocity.x = 350;
 		this.player.body.maxVelocity.y = 400;
 		this.player.body.setGravityY(1000);
+		this.player.invincible = false;
 	}
 
 	setCamera() {
@@ -221,24 +231,34 @@ export default class gameScene extends Phaser.Scene {
 		);
 	}
 	playerDeath(player) {
-		if (player.lives > 0) {
-			player.lives -= 1;
-			this.scene.start("gameScene", {
-				lives: player.lives,
-				score: player.score,
-				coinsArray: this.coinsArray,
-				heartsArray: this.heartsArray,
-				first_load: false,
-				level: this.level,
-				levelScore: this.levelScore,
-			});
-		} else {
-			this.endGame(false);
+		if (!player.invincible) {
+			if (player.lives > 0) {
+				player.lives -= 1;
+				this.scene.start("gameScene", {
+					lives: player.lives,
+					score: player.score,
+					coinsArray: this.coinsArray,
+					heartsArray: this.heartsArray,
+					first_load: false,
+					level: this.level,
+					levelScore: this.levelScore,
+				});
+			} else {
+				this.endGame(false);
+			}
 		}
 	}
 
 	addInput() {
 		this.cursors = this.input.keyboard.createCursorKeys();
+		this.input.keyboard.on("keydown-P", () => {
+			this.player.invincible = !this.player.invincible;
+			alert(
+				"Invincibility has been toggled to " +
+					this.player.invincible +
+					"."
+			);
+		});
 	}
 
 	addHud() {
@@ -299,7 +319,7 @@ export default class gameScene extends Phaser.Scene {
 	}
 
 	deathCheck() {
-		if (this.levelScore == this.maxScore) {
+		if (this.levelScore === this.maxScore) {
 			if (this.level < 4) {
 				this.scene.start("gameScene", {
 					score: this.player.score,
@@ -314,13 +334,14 @@ export default class gameScene extends Phaser.Scene {
 				this.endGame(true);
 			}
 		}
-		if (this.player.y >= 600) {
-			this.playerDeath(this.player);
+		if (!this.player.invincible) {
+			if (this.player.y >= 600) {
+				this.playerDeath(this.player);
+			}
 		}
 	}
 
 	endGame(wonGame) {
-		console.log(wonGame);
 		this.scene.start("endScreen", {
 			score: this.player.score,
 			win: wonGame,

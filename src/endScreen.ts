@@ -3,7 +3,6 @@
 export default class endScreen extends Phaser.Scene {
 	text2: Phaser.GameObjects.Text;
 	text4: Phaser.GameObjects.Text;
-	text3: Phaser.GameObjects.Text;
 	score: number;
 	win: boolean;
 	constructor() {
@@ -11,38 +10,43 @@ export default class endScreen extends Phaser.Scene {
 	}
 
 	init(data) {
-		this.score = data.score;
-		this.win = data.win;
+		if (Object.keys(data).length !== 0) {
+			this.score = data.score;
+			this.win = data.win;
+		} else {
+			this.score = 100;
+			this.win = false;
+		}
 	}
 	preload() {}
 
 	create() {
-		console.log(this.win);
 		if (this.win) {
-			this.text2 = this.add.text(200, 150, "idk u won", {
+			this.add.text(360, 200, "You Win!", {
+				fontSize: "50px",
+			});
+		} else {
+			this.add.text(350, 200, "You Died!", {
 				fontSize: "50px",
 			});
 		}
-		else {
-			this.text2 = this.add.text(200, 150, "get destroyed noob L", {
-				fontSize: "50px",
-			});
-		}
-		this.text4 = this.add.text(200, 250, "Score: ", {
+		this.add.text(256, 300, "Final Score: " + this.score.toString(), {
 			fontSize: "50px",
 		});
-		this.text3 = this.add.text(250, 300, this.score.toString(), {
-			fontSize: "50px",
+
+		this.add.text(280, 400, "Click Space To Restart!", {
+			fontSize: "30px",
 		});
+
 		this.input.keyboard.on("keydown-SPACE", () => {
 			this.scene.start("gameScene", {
 				score: 0,
-				lives: 3,
+				lives: 1,
 				first_load: true,
 				coinsArray: [],
 				heartsArray: [],
 				level: 1,
-				levelScore: 0
+				levelScore: 0,
 			});
 		});
 	}
